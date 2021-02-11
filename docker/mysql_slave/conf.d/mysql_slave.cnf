@@ -1,4 +1,5 @@
 [mysqld]
+explicit_defaults_for_timestamp = true
 server-id=2
 read_only
 gtid-mode=ON
