@@ -1,6 +1,6 @@
 [mysqld]
 explicit_defaults_for_timestamp = true
-log-bin
+log-bin=master
 server-id=1
 gtid-mode=ON
 enforce-gtid-consistency=ON
