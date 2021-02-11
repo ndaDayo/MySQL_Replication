@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mysql_master:
+    image: mysql:5.7
+    volumes:
+      - ./docker/mysql_master/conf.d:/etc/mysql/conf.d
+      - ./docker/mysql_master/init_data:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: ${MASTER_MYSQL_USER}
+      MYSQL_PASSWORD: ${MASTER_MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+
+  mysql_slave:
+    image: mysql:5.7
+    volumes:
+      - ./docker/mysql_slave/conf.d:/etc/mysql/conf.d
+      - ./docker/mysql_slave/init_data:/docker-entrypoint-initdb.d
+    environment:
+      MASTER_MYSQL_HOST: mysql_master
+      MASTER_MYSQL_USER: ${MASTER_MYSQL_USER}
+      MASTER_MYSQL_PASSWORD: ${MASTER_MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
