@@ -1,23 +1,59 @@
 version: '3'
 services:
-  mysql_master:
-    image: mysql:5.7
+  master:
+    container_name: master
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     volumes:
-      - ./docker/mysql_master/conf.d:/etc/mysql/conf.d
-      - ./docker/mysql_master/init_data:/docker-entrypoint-initdb.d
+      - ./docker/mysql_master/conf/:/conf
+      - ./setup.sh:/usr/local/bin/setup.sh
+      - master_log/:/var/log/mysql/
+      - master/db:/var/lib/mysql
+    tty: true
     environment:
-      MYSQL_DATABASE: test
-      MYSQL_USER: ${MASTER_MYSQL_USER}
-      MYSQL_PASSWORD: ${MASTER_MYSQL_PASSWORD}
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      TZ: 'Asia/Tokyo'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'master'
+    command: >
+      bash -c "
+      cp /conf/my.cnf /etc/mysql/conf.d/ &&
+      chmod 644 /etc/mysql/conf.d/my.cnf &&
+      /entrypoint.sh mysqld"
+    networks:
+      - demo-network
 
-  mysql_slave:
-    image: mysql:5.7
+  slave:
+    container_name: slave
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     volumes:
-      - ./docker/mysql_slave/conf.d:/etc/mysql/conf.d
-      - ./docker/mysql_slave/init_data:/docker-entrypoint-initdb.d
+      - ./slave/conf/:/conf
+      - ./setup.sh:/usr/local/bin/setup.sh
+      - slave_log/:/var/log/mysql/
+      - slave_db:/var/lib/mysql
+    tty: true
     environment:
-      MASTER_MYSQL_HOST: mysql_master
-      MASTER_MYSQL_USER: ${MASTER_MYSQL_USER}
-      MASTER_MYSQL_PASSWORD: ${MASTER_MYSQL_PASSWORD}
-      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      TZ: 'Asia/Tokyo'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'slave'
+    command: >
+      bash -c "
+      cp /conf/my.cnf /etc/mysql/conf.d/ &&
+      chmod 644 /etc/mysql/conf.d/my.cnf &&
+      /entrypoint.sh mysqld"
+    networks:
+      - demo-network
+
+volumes:
+  maste_db: {}
+  master_log: {}
+  slave_db: {}
+  slave_log: {}
+
+networks:
+  demo-network:
+    driver: bridge
